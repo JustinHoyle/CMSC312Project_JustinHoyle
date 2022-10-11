@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>797</width>
-    <height>344</height>
+    <width>987</width>
+    <height>598</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -31,18 +31,21 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>90</y>
+      <y>80</y>
       <width>75</width>
       <height>20</height>
      </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
     </property>
    </widget>
    <widget class="QPushButton" name="setCycleButton">
     <property name="geometry">
      <rect>
-      <x>10</x>
+      <x>30</x>
       <y>110</y>
-      <width>141</width>
+      <width>101</width>
       <height>23</height>
      </rect>
     </property>
@@ -173,12 +176,12 @@
      </item>
     </layout>
    </widget>
-   <widget class="QLabel" name="resourcesLLabel">
+   <widget class="QLabel" name="resourcesLabel">
     <property name="geometry">
      <rect>
       <x>670</x>
       <y>110</y>
-      <width>71</width>
+      <width>51</width>
       <height>16</height>
      </rect>
     </property>
@@ -212,14 +215,52 @@
      <string>Save Log</string>
     </property>
    </widget>
+   <widget class="QFrame" name="frame">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>110</y>
+      <width>161</width>
+      <height>181</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
+   <widget class="QFrame" name="frame_2">
+    <property name="geometry">
+     <rect>
+      <x>620</x>
+      <y>10</y>
+      <width>161</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="frameShape">
+     <enum>QFrame::StyledPanel</enum>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Raised</enum>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>797</width>
-     <height>22</height>
+     <width>987</width>
+     <height>21</height>
     </rect>
    </property>
   </widget>

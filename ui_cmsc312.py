@@ -1,13 +1,5 @@
-# -*- coding: utf-8 -*-
 
-################################################################################
-## Form generated from reading UI file 'cmsc312GUIXesrlO.ui'
-##
-## Created by: Qt User Interface Compiler version 6.2.0
-##
-## WARNING! All changes made in this file will be lost when recompiling UI file!
-################################################################################
-
+from ctypes import alignment
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
@@ -20,6 +12,9 @@ from PySide6.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
     QTextBrowser, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
+    def setCycleClicked(self):
+        self.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + self.cycleCountInput.text(), None))
+
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
@@ -31,10 +26,12 @@ class Ui_MainWindow(object):
         self.loadButton.setGeometry(QRect(40, 40, 75, 23))
         self.cycleCountInput = QLineEdit(self.centralwidget)
         self.cycleCountInput.setObjectName(u"cycleCountInput")
-        self.cycleCountInput.setGeometry(QRect(40, 90, 75, 20))
+        self.cycleCountInput.setGeometry(QRect(40, 85, 75, 20))
+        self.cycleCountInput.setAlignment(Qt.AlignRight)
         self.setCycleButton = QPushButton(self.centralwidget)
         self.setCycleButton.setObjectName(u"setCycleButton")
-        self.setCycleButton.setGeometry(QRect(10, 110, 141, 23))
+        self.setCycleButton.setGeometry(QRect(30, 110, 95, 23))
+        self.setCycleButton.clicked.connect(self.setCycleClicked)
         self.startButton = QPushButton(self.centralwidget)
         self.startButton.setObjectName(u"startButton")
         self.startButton.setGeometry(QRect(40, 160, 75, 23))
