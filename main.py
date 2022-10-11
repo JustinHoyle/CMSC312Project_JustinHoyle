@@ -20,8 +20,8 @@ class Main(QMainWindow, Ui_MainWindow):
         self.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycle), None))
         self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Processes Count: " + str(process), None))
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", u"CPU: " + str(cpu) + '%', None))
-        self.memoryUse.setText(QCoreApplication.translate("MainWindow", u"Memory: " + str(memory) + 'MB', None))
-        self.diskUse.setText(QCoreApplication.translate("MainWindow", u"Disk: " + str(disk) + 'Mbps', None))
+        self.memoryUse.setText(QCoreApplication.translate("MainWindow", u"Memory: " + str(memory) + ' MB', None))
+        self.diskUse.setText(QCoreApplication.translate("MainWindow", u"Disk: " + str(disk) + ' MB/s', None))
 
 # Run Program
 if __name__ == "__main__":
