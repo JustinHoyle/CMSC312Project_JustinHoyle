@@ -7,7 +7,7 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
+from PySide6.QtWidgets import (QApplication, QFrame, QLabel, QLineEdit, QMainWindow,
     QMenuBar, QPushButton, QSizePolicy, QStatusBar,
     QTextBrowser, QVBoxLayout, QWidget)
 
@@ -86,15 +86,21 @@ class Ui_MainWindow(object):
 
         self.verticalLayout_2.addWidget(self.diskUse)
 
-        self.resourcesLLabel = QLabel(self.centralwidget)
-        self.resourcesLLabel.setObjectName(u"resourcesLLabel")
-        self.resourcesLLabel.setGeometry(QRect(670, 110, 71, 16))
+        self.resourcesLabel = QLabel(self.centralwidget)
+        self.resourcesLabel.setObjectName(u"resourcesLabel")
+        self.resourcesLabel.setGeometry(QRect(670, 110, 71, 16))
         self.fileLoadedLabel = QLabel(self.centralwidget)
         self.fileLoadedLabel.setObjectName(u"fileLoadedLabel")
         self.fileLoadedLabel.setGeometry(QRect(10, 20, 121, 16))
         self.saveLogButton = QPushButton(self.centralwidget)
         self.saveLogButton.setObjectName(u"saveLogButton")
         self.saveLogButton.setGeometry(QRect(40, 270, 75, 23))
+        self.resourceFrame = QFrame(self.centralwidget)
+        self.resourceFrame.setObjectName(u"resourceFrame")
+        self.resourceFrame.setGeometry(QRect(620, 110, 161, 181))
+        self.resourceFrame.setStyleSheet(u"border-color: rgb(0, 0, 0);")
+        self.resourceFrame.setFrameShape(QFrame.StyledPanel)
+        self.resourceFrame.setFrameShadow(QFrame.Raised)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -121,7 +127,7 @@ class Ui_MainWindow(object):
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", u"CPU:", None))
         self.memoryUse.setText(QCoreApplication.translate("MainWindow", u"Memory:", None))
         self.diskUse.setText(QCoreApplication.translate("MainWindow", u"Disk:", None))
-        self.resourcesLLabel.setText(QCoreApplication.translate("MainWindow", u"Resources", None))
+        self.resourcesLabel.setText(QCoreApplication.translate("MainWindow", u"Resources", None))
         self.fileLoadedLabel.setText(QCoreApplication.translate("MainWindow", u"File Loaded:", None))
         self.saveLogButton.setText(QCoreApplication.translate("MainWindow", u"Save Log", None))
     # retranslateUi
