@@ -3,6 +3,8 @@
 # Main app file to run gui
 # CMSC 312
 
+from cProfile import run
+from hashlib import new
 import simpy
 import sys
 import random
@@ -15,6 +17,14 @@ from PySide6.QtWidgets import (QApplication, QMainWindow)
 from PySide6.QtCore import (QCoreApplication)
 
 wait_times = []
+currentProcessCount = 0
+currentCycleCount = 0
+
+newLCount = 0
+readyLCount = 0
+runLCount = 0
+waitLCount = 0
+exitLCount = 0
 
 print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
 print(psutil.Process(os.getpid()).cpu_percent())
