@@ -69,7 +69,7 @@ def startFactory(env, assemblyCount, computerCount, testFieldCount):
     factory = Factory(env, assemblyCount, computerCount, testFieldCount)
 
     # FORK
-    
+
     for machinePart in range(3):
         env.process(createDroid(env, machinePart, factory))
 
@@ -116,10 +116,12 @@ def main():
 
     # View the results
     mins, secs = get_average_wait_time(wait_times)
+    text = "Running simulation..." + f"\nThe average wait time is {mins} minutes and {secs} seconds."
     print(
         "Running simulation...",
         f"\nThe average wait time is {mins} minutes and {secs} seconds.",
     )
+    return text
 
     
 # Launch GUI
@@ -134,13 +136,17 @@ class Main(QMainWindow, Ui_MainWindow):
         self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Processes Count: " + str(process), None))
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", u"CPU: " + str(cpu) + '%', None))
         self.memoryUse.setText(QCoreApplication.translate("MainWindow", u"Memory: " + str(memory) + ' MB', None))
-        self.diskUse.setText(QCoreApplication.translate("MainWindow", u"Disk: " + str(disk) + ' MB/s', None))
+    
+    def updateTextbox(self, text):
+        self.proccessViewer.append(text)
+
 
 # Run Program
 if __name__ == "__main__":
-    main()
+    text = main()
     app = QApplication(sys.argv)
     window = Main()
     window.show()
     window.updateScreen(0,0,0,0,0)
+    window.updateTextbox(text)
     sys.exit(app.exec())

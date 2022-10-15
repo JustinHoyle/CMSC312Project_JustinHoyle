@@ -43,9 +43,9 @@
    <widget class="QPushButton" name="setCycleButton">
     <property name="geometry">
      <rect>
-      <x>30</x>
+      <x>20</x>
       <y>110</y>
-      <width>101</width>
+      <width>121</width>
       <height>23</height>
      </rect>
     </property>
@@ -118,9 +118,9 @@
    <widget class="QPushButton" name="saveLogButton">
     <property name="geometry">
      <rect>
-      <x>40</x>
+      <x>30</x>
       <y>270</y>
-      <width>75</width>
+      <width>91</width>
       <height>23</height>
      </rect>
     </property>
@@ -128,142 +128,146 @@
      <string>Save Log</string>
     </property>
    </widget>
-   <widget class="QFrame" name="frame">
+   <widget class="QWidget" name="verticalLayoutWidget_2">
     <property name="geometry">
      <rect>
       <x>620</x>
-      <y>110</y>
-      <width>161</width>
-      <height>181</height>
+      <y>190</y>
+      <width>160</width>
+      <height>101</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true">border-color: rgb(0, 0, 0);</string>
-    </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QLabel" name="resourcesLabel">
-     <property name="geometry">
-      <rect>
-       <x>50</x>
-       <y>0</y>
-       <width>51</width>
-       <height>16</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Resources</string>
-     </property>
-    </widget>
-    <widget class="QWidget" name="verticalLayoutWidget_2">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>20</y>
-       <width>160</width>
-       <height>161</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
-      <item>
-       <widget class="QLabel" name="CPUpercent">
-        <property name="text">
-         <string>CPU:</string>
-        </property>
-        <property name="indent">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="memoryUse">
-        <property name="text">
-         <string>Memory:</string>
-        </property>
-        <property name="indent">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="diskUse">
-        <property name="text">
-         <string>Disk:</string>
-        </property>
-        <property name="indent">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout_2">
+     <item>
+      <widget class="QLabel" name="CPUpercent">
+       <property name="text">
+        <string>CPU:</string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="memoryUse">
+       <property name="text">
+        <string>Memory:</string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="cycleCountLabel">
+       <property name="text">
+        <string>Cycle Count:</string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="processCountLabel">
+       <property name="text">
+        <string>Processes Count:</string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </widget>
-   <widget class="QFrame" name="frame_2">
+   <widget class="QLabel" name="resourcesLabel">
+    <property name="geometry">
+     <rect>
+      <x>660</x>
+      <y>170</y>
+      <width>71</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Resources</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="verticalLayoutWidget">
     <property name="geometry">
      <rect>
       <x>620</x>
+      <y>30</y>
+      <width>160</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout">
+     <item>
+      <widget class="QLabel" name="newLabel">
+       <property name="text">
+        <string>New: </string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="readyLabel">
+       <property name="text">
+        <string>Ready: </string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="runLabel">
+       <property name="text">
+        <string>Run: </string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="waitLabel">
+       <property name="text">
+        <string>Wait: </string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="exitLabel">
+       <property name="text">
+        <string>Exit: </string>
+       </property>
+       <property name="indent">
+        <number>10</number>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QLabel" name="processStatesLabel">
+    <property name="geometry">
+     <rect>
+      <x>650</x>
       <y>10</y>
-      <width>161</width>
-      <height>81</height>
+      <width>91</width>
+      <height>16</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true">border-color: rgb(0, 0, 0);</string>
+    <property name="text">
+     <string>Process States</string>
     </property>
-    <property name="frameShape">
-     <enum>QFrame::StyledPanel</enum>
-    </property>
-    <property name="frameShadow">
-     <enum>QFrame::Raised</enum>
-    </property>
-    <widget class="QWidget" name="verticalLayoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>0</y>
-       <width>160</width>
-       <height>81</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout">
-      <item>
-       <widget class="QLabel" name="cycleCountLabel">
-        <property name="text">
-         <string>Cycle Count:</string>
-        </property>
-        <property name="indent">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QLabel" name="processCountLabel">
-        <property name="text">
-         <string>Processes Count:</string>
-        </property>
-        <property name="indent">
-         <number>10</number>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
    </widget>
-   <zorder>frame</zorder>
-   <zorder>loadButton</zorder>
-   <zorder>cycleCountInput</zorder>
-   <zorder>setCycleButton</zorder>
-   <zorder>startButton</zorder>
-   <zorder>pauseButton</zorder>
-   <zorder>stopButton</zorder>
-   <zorder>proccessViewer</zorder>
-   <zorder>fileLoadedLabel</zorder>
-   <zorder>saveLogButton</zorder>
-   <zorder>frame_2</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -271,7 +275,7 @@
      <x>0</x>
      <y>0</y>
      <width>987</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
