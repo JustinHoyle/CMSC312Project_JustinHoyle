@@ -7,6 +7,7 @@ import simpy
 import sys
 import random
 import statistics
+import os, psutil
 
 from ui_cmsc312 import Ui_MainWindow
 
@@ -15,12 +16,17 @@ from PySide6.QtCore import (QCoreApplication)
 
 wait_times = []
 
+print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
+print(psutil.Process(os.getpid()).cpu_percent())
+
 class Factory(object):
     def __init__(self, env, assemblyCount, computerCount, testFieldCount):
         self.env = env
         self.assemblyMachine = simpy.Resource(env, assemblyCount)
         self.computer = simpy.Resource(env, computerCount)
         self.testField = simpy.Resource(env, testFieldCount)
+
+    # CALCULATE
 
     # Calculate random time it takes for a factory to assemble a droid from the given machine parts
     def assembleDroid(self, machinePart):
@@ -38,6 +44,8 @@ class Factory(object):
 def createDroid(env, machineParts, factory):
     arrival_time = env.now
 
+    # I/O
+
     # Wait for assembly machine to finish previous request
     with factory.assemblyMachine.request() as request:
         yield request
@@ -53,13 +61,15 @@ def createDroid(env, machineParts, factory):
         yield request
         yield env.process(factory.testDroid(machineParts))
 
-    # Moviegoer heads into the theater
+    # Machine parts arrive in factory
     wait_times.append(env.now - arrival_time)
 
 
 def startFactory(env, assemblyCount, computerCount, testFieldCount):
     factory = Factory(env, assemblyCount, computerCount, testFieldCount)
 
+    # FORK
+    
     for machinePart in range(3):
         env.process(createDroid(env, machinePart, factory))
 
