@@ -3,6 +3,11 @@
 # Main app file to run gui
 # CMSC 312
 
+# TODO Add file loading system/worker count
+# Start, stop, pause
+# Save log
+# Use itertools?
+
 from cProfile import run
 from hashlib import new
 from logging.config import stopListening
