@@ -1,0 +1,32 @@
+Loading process 0x0000016180BB4640
+Loading process 0x0000016180A8BE00
+Process 0x0000016180A8BE00 loading finished in 5.12 seconds
+Process 0x0000016180A8BE00 is ready to run
+Process 0x0000016180BB4640 loading finished in 5.88 seconds
+Process 0x0000016180BB4640 is ready to run
+Process 0x0000016180A8BE00 in ready state 2.53 seconds
+Running calculation for process 0x0000016180A8BE00
+Process 0x0000016180BB4640 in ready state 6.93 seconds
+Running calculation for process 0x0000016180BB4640
+Process 0x0000016180A8BE00 ran in 17.33 seconds
+Running calculation for process 0x0000016180A8BE00
+Process 0x0000016180A8BE00 ran in 23.39 seconds
+Waiting on I/O completion for process 0x0000016180A8BE00
+Process 0x0000016180BB4640 ran in 38.95 seconds
+Running calculation for process 0x0000016180BB4640
+Process 0x0000016180A8BE00 halted for 8.29 seconds
+Running calculation for process 0x0000016180A8BE00
+Process 0x0000016180A8BE00 ran in 8.78 seconds
+Waiting on I/O completion for process 0x0000016180A8BE00
+Process 0x0000016180BB4640 ran in 25.27 seconds
+Waiting on I/O completion for process 0x0000016180BB4640
+Process 0x0000016180A8BE00 halted for 11.85 seconds
+Process 0x0000016180A8BE00 complete, releasing resources
+Exit for process 0x0000016180A8BE00 finished in 4.20 seconds
+Process 0x0000016180BB4640 halted for 6.55 seconds
+Running calculation for process 0x0000016180BB4640
+Process 0x0000016180BB4640 ran in 2.05 seconds
+Waiting on I/O completion for process 0x0000016180BB4640
+Process 0x0000016180BB4640 halted for 5.21 seconds
+Process 0x0000016180BB4640 complete, releasing resources
+Exit for process 0x0000016180BB4640 finished in 2.31 seconds
