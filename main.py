@@ -3,215 +3,352 @@
 # Main app file to run gui
 # CMSC 312
 
-# TODO Add file loading system/worker count
-# Start, stop, pause
-# Save log
-# Use itertools?
+# TEMPLATE FOR TEXT INPUT FILE
+######################################
+# Commands must be listed as command(Calculate,I/O),min(int),max(int)
+######################################
+# Operation List,Min Cycles,Max Cycles
+# Calculate,5,100
+# Calculate,25,50
+# I/O,10,20
+# Calculate,5,20
+# I/O,15,25
 
-from cProfile import run
-from hashlib import new
-from logging.config import stopListening
-from platform import machine
-import simpy
-import sys
-import random
-import statistics
-import os, psutil
+import sys, os, psutil, time, numpy as np
+from multiprocessing import Lock
 
 from ui_cmsc312 import Ui_MainWindow
 
-from PySide6.QtWidgets import (QApplication, QMainWindow)
-from PySide6.QtCore import (QCoreApplication)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QInputDialog, QMessageBox)
+from PySide6.QtCore import (QCoreApplication, QObject, QThread)
+from PySide6 import QtTest
 
-wait_times = []
-currentProcessCount = 0
-currentCycleCount = 0
+# Declare global vars
+saveLog = ''
+processCount = 0
+cycleCount = 0
+cycleLimit = 0
+fileCommands = []
+fileName = ''
+pause = False
+resumeFromCycleCount = False
 
-# Change to toal count
-newLCount = 0
-readyLCount = 0
-runLCount = 0
-waitLCount = 0
-exitLCount = 0
+# Read input file
+def readFile():
+    global fileCommands
+    global fileName
+    fileCommands = [line.strip().split(',') for line in open(fileName)]
 
-# Get CPU % and memory in MBs
-print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
-print(psutil.Process(os.getpid()).cpu_times())
+# Create log file
+def writeFile():
+    global saveLog
+    text_file = open("Simulator Log.txt", "w")
+    text_file.write(saveLog)
+    text_file.close()
 
-class Factory(object):
-    def __init__(self, env, assemblyCount, computerCount, testFieldCount):
-        self.env = env
-        self.assemblyMachine = simpy.Resource(env, assemblyCount)
-        self.computer = simpy.Resource(env, computerCount)
-        self.testField = simpy.Resource(env, testFieldCount)
-
-    # CALCULATE
-
-    # Calculate random time it takes for a factory to assemble a droid from the given machine parts
-    def assembleDroid(self, machinePart):
-        window.updateRun(1)
-        window.updateTextbox("Assembling droid #" + str(machinePart) + "...")
-        yield self.env.timeout(random.randint(1, 5))
-        window.updateRun(-1)
-
-    # Calculate time it takes for a factory to program a droid from the given machine parts
-    def programOrders(self, machineParts):
-        window.updateRun(1)
-        window.updateTextbox("Programming droid #" + str(machineParts) + "...")
-        yield self.env.timeout(5)
-        window.updateRun(-1)
-
-    # Calculate random time it takes for a factory to test an assembled droid from the given machine parts
-    def testDroid(self, machineParts):
-        window.updateRun(1)
-        window.updateTextbox("Testing droid #" + str(machineParts) + "...")
-        yield self.env.timeout(random.randint(1, 10)) 
-        window.updateRun(-1) 
-
-
-def createDroid(env, machineParts, factory):
-    global currentProcessCount
-    currentProcessCount = 1+currentProcessCount
-    window.updateTextbox("Starting process " + str(machineParts) + "...")
-    arrival_time = env.now
-
-    # I/O
-    
-    # Wait for assembly machine to finish previous request
-    with factory.assemblyMachine.request() as request:
-        yield request
-        yield env.process(factory.assembleDroid(machineParts))
-    
-    # Wait for computer to finish previous request
-    with factory.computer.request() as request:
-        yield request
-        yield env.process(factory.programOrders(machineParts))
-    
-    # Wait for test field to finish previous request
-    with factory.testField.request() as request:
-        yield request     
-        yield env.process(factory.testDroid(machineParts))
- 
-    # Machine parts arrive in factory
-    wait_times.append(env.now - arrival_time)
-
-
-def startFactory(env, assemblyCount, computerCount, testFieldCount):
-    factory = Factory(env, assemblyCount, computerCount, testFieldCount)
-    window.updateTextbox("Starting factory...")
-    # FORK
-
-    for machinePart in range(3):
-        window.updateNew(1)
-        env.process(createDroid(env, machinePart, factory))
-        window.updateExit(1)
-        window.updateExit(-1)
-        window.updateNew(-1)
-
-    while True:
-        window.updateWait(1)
-        yield env.timeout(0.20)
-        window.updateWait(-1)
-        window.updateNew(1)
-        machinePart += 1
-        env.process(createDroid(env, machinePart, factory))
-        window.updateExit(1)
-        window.updateExit(-1)
-        window.updateNew(-1)
-    
-
-
-def get_average_wait_time(wait_times):
-    average_wait = statistics.mean(wait_times)
-    # Pretty print the results
-    minutes, frac_minutes = divmod(average_wait, 1)
-    seconds = frac_minutes * 60
-    return round(minutes), round(seconds)
-
-
-def get_user_input():
-    num_assembly = input("Input # of assembly machines working: ")
-    num_program = input("Input # of programming machines working: ")
-    num_field = input("Input # of test fields working: ")
-    params = [num_assembly, num_program, num_field]
-    if all(str(i).isdigit() for i in params):  # Check input is valid
-        params = [int(x) for x in params]
-    else:
-        print(
-            "Could not parse input. Simulation will use default values:",
-            "\n1 assembly machine, 1 programming machine, 1 test field.",
-        )
-        params = [1, 1, 1]
-    return params
-
-
-def main():
-    # Setup
-    random.seed(42)
-    num_assembly, num_program, num_field = get_user_input()
-
-    # Run the simulation
-    env = simpy.Environment()
-    env.process(startFactory(env, num_assembly, num_program, num_field))
-    env.run(until=90) # SImulate running for 90 minutes
-    window.updateWait(-1)
-    window.updateRun(-runLCount)
-
-    # View the results
-    mins, secs = get_average_wait_time(wait_times)
-    text = "Stopping simulation..." + f"\nThe average run time is {mins} minutes and {secs} seconds."
-    window.updateTextbox(text)
-    print(f"The average run time is {mins} minutes and {secs} seconds.",)
-
-    
-# Launch GUI
-class Main(QMainWindow, Ui_MainWindow):
+# Count current states of threads and cycle count
+class threadCounter():
     def __init__(self):
-        #Initialize gui
+        # New, ready, run, wait, and exit process count, and Cycle count
+        self._counter = [0,0,0,0,0,0]
+        # initialize lock
+        self._lock = Lock()
+    
+    def increment(self, i):
+        with self._lock:
+            self._counter[i] += 1
+    
+    def deincrement(self, i):
+        with self._lock:
+            self._counter[i] -= 1
+    
+    def value(self, i):
+        with self._lock:
+            return self._counter[i]
+
+# Pause threads at set cycle count
+class processLifecycle(QObject):
+
+    def __init__(self, counter):
+        super(processLifecycle, self).__init__()
+        self.counter = counter
+
+    # Check cycle count and puase if met
+    def checkCycleCount(self):
+        global pause
+        global resumeFromCycleCount
+        global cycleLimit
+
+        if not resumeFromCycleCount and self.counter.value(5) == int(cycleLimit) and int(cycleLimit) != 0:
+            pause = True
+            resumeFromCycleCount = True
+
+    def controlCycles(self):
+        global fileCommands
+
+        # get thread address
+        thisProcess= str(QThread.currentThread()).split(") at ",1)[1].replace('>', '')
+
+        # Generate random seeds for each thread
+        np.random.seed()
+
+        # Start new cycle and then put in to ready state
+        self.newCycle(thisProcess)
+        self.readyCycle(thisProcess)
+        readFile()
+
+        # Read commands to determine calculate, or wait
+        for command in fileCommands:
+            if command[0].lower() == 'calculate':
+                self.runCycle(int(command[1]), int(command[2]), thisProcess)
+            elif command[0].lower() == 'i/o':
+                self.waitCycle(int(command[1]), int(command[2]), thisProcess)
+        # Start exit
+        self.exitCycle(thisProcess)
+
+    # Run new lifecycle
+    def newCycle(self, process):
+        global saveLog
+        global pause
+
+        window.updateTextbox("Loading process " + process)
+        saveLog+=("Loading process " + process + "\n")
+        self.counter.increment(0)
+        start = time.perf_counter()
+        pauseTime = 0
+        for i in range(np.random.randint(5,15)):
+            self.checkCycleCount()
+            if not pause:
+                self.counter.increment(5)
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                QtTest.QTest.qWait(250)  
+            else:
+                pauseTime += time.perf_counter() - start
+                while pause:
+                    QtTest.QTest.qWait(10)
+                start = time.perf_counter()
+                
+        stop = time.perf_counter()
+        window.updateTextbox("Process " + process + f" loading finished in {pauseTime + stop - start:0.2f} seconds")
+        saveLog+=("Process " + process + f" loading finished in {stop - start:0.2f} seconds\n")
+        self.counter.deincrement(0)
+
+    # Run ready lifecycle
+    def readyCycle(self, process):
+        global saveLog
+        window.updateTextbox("Process " + process + " is ready to run")
+        saveLog+=("Process " + process + " is ready to run\n")
+        self.counter.increment(1)
+        start = time.perf_counter()
+        pauseTime = 0
+        for i in range(np.random.randint(5,15)):
+            self.checkCycleCount()
+            if not pause:
+                self.counter.increment(5)
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                QtTest.QTest.qWait(250)  
+            else:
+                pauseTime += time.perf_counter() - start
+                while pause:
+                    QtTest.QTest.qWait(10)
+                start = time.perf_counter()    
+        stop = time.perf_counter()
+        window.updateTextbox("Process " + process + f" in ready state {pauseTime + stop - start:0.2f} seconds")
+        saveLog+=("Process " + process + f" in ready state {stop - start:0.2f} seconds\n")
+        self.counter.deincrement(1)
+
+    # Run calculate, 'run' lifecycle
+    def runCycle(self, min, max, process):
+        global saveLog
+        window.updateTextbox("Running calculation for process " + process)
+        saveLog+=("Running calculation for process " + process + "\n")
+        self.counter.increment(2)
+        start = time.perf_counter()
+        pauseTime = 0
+        for i in range(np.random.randint(min,max)):
+            self.checkCycleCount()
+            if not pause:
+                self.counter.increment(5)
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                QtTest.QTest.qWait(250)  
+            else:
+                pauseTime += time.perf_counter() - start
+                while pause:
+                    QtTest.QTest.qWait(10)
+                start = time.perf_counter()
+        stop = time.perf_counter()
+        window.updateTextbox("Process " + process + f" ran in {stop - start:0.2f} seconds")
+        saveLog+=("Process " + process + f" ran in {stop - start:0.2f} seconds\n")
+        self.counter.deincrement(2)
+
+
+    # Run wait, I/O lifecycle
+    def waitCycle(self, min, max, process):
+        global saveLog
+        window.updateTextbox("Waiting on I/O completion for process " + process)
+        saveLog+=("Waiting on I/O completion for process " + process + "\n")
+        self.counter.increment(3)
+        start = time.perf_counter()
+        pauseTime = 0
+        for i in range(np.random.randint(min,max)):
+            self.checkCycleCount()
+            if not pause:
+                self.counter.increment(5)
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                QtTest.QTest.qWait(250)  
+            else:
+                pauseTime += time.perf_counter() - start
+                while pause:
+                    QtTest.QTest.qWait(10)
+                start = time.perf_counter()
+        stop = time.perf_counter()
+        window.updateTextbox(f"Process " + process + f" halted for {stop - start:0.2f} seconds")
+        saveLog+=(f"Process " + process + f" halted for {stop - start:0.2f} seconds\n")
+        self.counter.deincrement(3)
+
+
+    # Run exit lifecycle
+    def exitCycle(self, process):
+        global saveLog
+        window.updateTextbox("Process " + process + " complete, releasing resources")
+        saveLog+=("Process " + process + " complete, releasing resources\n")
+        self.counter.increment(4)
+        pauseTime = 0
+        for i in range(np.random.randint(5,15)):
+            self.checkCycleCount()
+            if not pause:
+                self.counter.increment(5)
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                QtTest.QTest.qWait(250)  
+            else:
+                pauseTime += time.perf_counter() - start
+                while pause:
+                    QtTest.QTest.qWait(10)
+                start = time.perf_counter()
+        stop = time.perf_counter()
+        self.counter.deincrement(4)
+        window.updateTextbox("Exit for process " + process + f" finished in {stop - start:0.2f} seconds")
+        saveLog+=("Exit for process " + process + f" finished in {stop - start:0.2f} seconds\n")
+    
+# GUI class
+class Main(QMainWindow, Ui_MainWindow):
+
+    #Initialize gui
+    def __init__(self):
         QMainWindow.__init__(self)
         self.setupUi(self)
+        
+        self.startButton.clicked.connect(self.startClicked)
+        self.loadButton.clicked.connect(self.getFile)
+        self.saveLogButton.clicked.connect(self.writeFile)
+        self.pauseButton.clicked.connect(self.pause)
+        self.resumeButton.clicked.connect(self.resume)
+        self.setCycleButton.clicked.connect(self.setCycleLimit)
     
-    def updateScreen(self, cycle, process, cpu, memory, disk):
-        self.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycle), None))
-        self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Processes Count: " + str(process), None))
-        self.CPUpercent.setText(QCoreApplication.translate("MainWindow", u"CPU: " + str(cpu) + '%', None))
-        self.memoryUse.setText(QCoreApplication.translate("MainWindow", u"Memory: " + str(memory) + ' MB', None))
+    # Link button to start simulation
+    def startClicked(self):
+        global fileName
+        if fileName:
+            self.runLongTask()
+        else:
+            popup = QMessageBox(QMessageBox.Critical,"File load error","No file loaded!",QMessageBox.Ok,self)
+            popup.show()
+
+    # Ask for file name input and make sure it exists, then ask for desired number of threads
+    def getFile(self, invalid):
+        global fileName
+        global processCount
+
+        if not invalid:
+            text, ok = QInputDialog.getText(self, 'Load File', 'Enter file name:')
+		
+            if ok:
+                if os.path.exists(str(text)):
+                    self.fileLoadedLabel.setText('File Loaded: ' + str(text))
+                    fileName = text
+                    text, ok = QInputDialog.getText(self, 'Process Count', 'Enter number of processes:')
+                    processCount = int(text)
+                else:
+                    self.getFile(True)
+        
+        else:
+            text, ok = QInputDialog.getText(self, 'Load File', ' INVALID FILE NAME - Enter file name:')
+
+            if ok:
+                if os.path.exists(str(text)):
+                    self.fileLoadedLabel.setText('File Loaded: ' + str(text))
+                    fileName = text
+                    text, ok = QInputDialog.getText(self, 'Process Count', 'Enter number of processes:')
+                    processCount = int(text)
+                else:
+                    self.getFile(True)
+
+    # Create log file
+    def writeFile(self):
+        writeFile()
     
+    # Set cycle limit
+    def setCycleLimit(self):
+        global cycleLimit   
+        cycleLimit = self.cycleCountInput.text()
+    
+    # Start simulation
+    def runLongTask(self):
+        global processCount
+        counter = threadCounter()
+
+        # Create a QThread object    
+        self.threads = [QThread() for i in range(processCount)]
+
+        # Create a worker object
+        self.workers = [processLifecycle(counter) for thread in self.threads]
+
+        # Move worker to the thread
+        for worker, thread in zip(self.workers, self.threads):
+            worker.moveToThread(thread)
+
+        # Connect signals and slots
+        for worker, thread in zip(self.workers, self.threads):
+            thread.started.connect(worker.controlCycles)
+
+        # Start the thread
+        for thread in self.threads:
+            thread.start()   
+    
+    # Pause thread
+    def pause(self):
+        global pause
+        pause = True
+    
+    # Resume thread
+    def resume(self):
+        global pause
+        pause = False
+
+    # Update resources/process states
+    def updateScreen(self, new, ready, run, wait, exitV, counter):
+        global processCount
+        self.newLabel.setText(QCoreApplication.translate("MainWindow", u"New: " + str(new), None))
+        self.readyLabel.setText(QCoreApplication.translate("MainWindow", u"Ready: " + str(ready), None))
+        self.runLabel.setText(QCoreApplication.translate("MainWindow", u"Run: " + str(run), None))
+        self.waitLabel.setText(QCoreApplication.translate("MainWindow", u"Wait: " + str(wait), None))
+        self.exitLabel.setText(QCoreApplication.translate("MainWindow", u"Exit: " + str(exitV), None))
+        self.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(counter), None))
+        self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Process Count: " + str(processCount), None))
+        # CPU % will likely always be zero due to how python is not closely related to the cpu
+        self.CPUpercent.setText(QCoreApplication.translate("MainWindow", f"CPU: {psutil.Process(os.getpid()).cpu_percent():0.2f}%", None))
+        self.memoryUse.setText(QCoreApplication.translate("MainWindow", f"Memory: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2:0.2f} MB", None))
+    
+    # Update main console
     def updateTextbox(self, text):
         self.proccessViewer.append(text)
-    
-    def updateNew(self, check):
-        global newLCount
-        newLCount = newLCount + check
-        self.newLabel.setText(QCoreApplication.translate("MainWindow", u"New: " + str(newLCount), None))
-    
-    def updateReady(self, check):
-        global readyLCount
-        readyLCount = readyLCount + check
-        self.readyLabel.setText(QCoreApplication.translate("MainWindow", u"Ready: " + str(readyLCount), None))
-    
-    def updateRun(self, check):
-        global runLCount
-        runLCount = runLCount + check
-        self.runLabel.setText(QCoreApplication.translate("MainWindow", u"Run: " + str(runLCount), None))
-    
-    def updateWait(self, check):
-        global waitLCount
-        waitLCount = waitLCount + check
-        self.waitLabel.setText(QCoreApplication.translate("MainWindow", u"Wait: " + str(waitLCount), None))
-    
-    def updateExit(self, check):
-        global exitLCount
-        exitLCount = exitLCount + check
-        self.exitLabel.setText(QCoreApplication.translate("MainWindow", u"Exit: " + str(exitLCount), None))
 
+# Initialize main window
+app = QApplication(sys.argv)
+window = Main()
 
 # Run Program
 if __name__ == "__main__":
-    #main()
-    app = QApplication(sys.argv)
-    window = Main()
-    main()
     window.show()
-    window.updateScreen(0,0,0,0,0)
+    window.updateScreen(0,0,0,0,0,0)
     sys.exit(app.exec())

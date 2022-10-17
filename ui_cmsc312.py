@@ -11,8 +11,6 @@ from PySide6.QtWidgets import (QApplication, QLabel, QLineEdit, QMainWindow,
     QTextBrowser, QVBoxLayout, QWidget)
 
 class Ui_MainWindow(object):
-    def setCycleClicked(self):
-        self.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + self.cycleCountInput.text(), None))
 
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
@@ -33,12 +31,12 @@ class Ui_MainWindow(object):
         self.startButton = QPushButton(self.centralwidget)
         self.startButton.setObjectName(u"startButton")
         self.startButton.setGeometry(QRect(40, 160, 75, 23))
+        self.resumeButton = QPushButton(self.centralwidget)
+        self.resumeButton.setObjectName(u"resumeButton")
+        self.resumeButton.setGeometry(QRect(40, 190, 75, 23))
         self.pauseButton = QPushButton(self.centralwidget)
         self.pauseButton.setObjectName(u"pauseButton")
-        self.pauseButton.setGeometry(QRect(40, 190, 75, 23))
-        self.stopButton = QPushButton(self.centralwidget)
-        self.stopButton.setObjectName(u"stopButton")
-        self.stopButton.setGeometry(QRect(40, 220, 75, 23))
+        self.pauseButton.setGeometry(QRect(40, 220, 75, 23))
         self.proccessViewer = QTextBrowser(self.centralwidget)
         self.proccessViewer.setObjectName(u"proccessViewer")
         self.proccessViewer.setGeometry(QRect(170, 10, 441, 281))
@@ -139,8 +137,8 @@ class Ui_MainWindow(object):
         self.loadButton.setText(QCoreApplication.translate("MainWindow", u"Load", None))
         self.setCycleButton.setText(QCoreApplication.translate("MainWindow", u"Set Cycle Limit", None))
         self.startButton.setText(QCoreApplication.translate("MainWindow", u"Start", None))
+        self.resumeButton.setText(QCoreApplication.translate("MainWindow", u"Resume", None))
         self.pauseButton.setText(QCoreApplication.translate("MainWindow", u"Pause", None))
-        self.stopButton.setText(QCoreApplication.translate("MainWindow", u"Stop", None))
         self.fileLoadedLabel.setText(QCoreApplication.translate("MainWindow", u"File Loaded:", None))
         self.saveLogButton.setText(QCoreApplication.translate("MainWindow", u"Save Log", None))
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", u"CPU:", None))
