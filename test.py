@@ -5,9 +5,10 @@
 
 # TODO Add file loading system/worker count
 # Start, stop, pause
-# Save log
-# Use itertools?
+# FIND OUT HOW TO PAUSE
+# Check if load file exists
 
+from ast import arg
 from cProfile import run
 from hashlib import new
 from logging.config import stopListening
@@ -17,12 +18,23 @@ import sys
 import random
 import statistics
 import os, psutil
+import random
+import string
+import time
+import multiprocessing as mp
+from ctypes import c_int
+from multiprocessing import Value, Lock, Process
+import numpy as np
+
 
 from ui_cmsc312 import Ui_MainWindow
 
-from PySide6.QtWidgets import (QApplication, QMainWindow)
-from PySide6.QtCore import (QCoreApplication)
+from PySide6.QtWidgets import (QApplication, QMainWindow, QInputDialog)
+from PySide6.QtCore import (QCoreApplication, QObject, QThread)
+from PySide6 import QtTest
 
+
+saveLog = ''
 wait_times = []
 currentProcessCount = 0
 currentCycleCount = 0
@@ -34,146 +46,177 @@ runLCount = 0
 waitLCount = 0
 exitLCount = 0
 
+cycleCount = 0
+
+fileCommands = []
+fileName = ''
+
 # Get CPU % and memory in MBs
-print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
-print(psutil.Process(os.getpid()).cpu_times())
+#print(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)
+#print(psutil.Process(os.getpid()).cpu_times())
 
-class Factory(object):
-    def __init__(self, env, assemblyCount, computerCount, testFieldCount):
-        self.env = env
-        self.assemblyMachine = simpy.Resource(env, assemblyCount)
-        self.computer = simpy.Resource(env, computerCount)
-        self.testField = simpy.Resource(env, testFieldCount)
+def readFile():
+    global fileCommands
+    global fileName
+    fileCommands = [line.strip().split(',') for line in open(fileName)]
 
-    # CALCULATE
+def writeFile():
+    global saveLog
+    text_file = open("Simulator Log.txt", "w")
+    text_file.write(saveLog)
+    text_file.close()
 
-    # Calculate random time it takes for a factory to assemble a droid from the given machine parts
-    def assembleDroid(self, machinePart):
-        window.updateRun(1)
-        window.updateTextbox("Assembling droid #" + str(machinePart) + "...")
-        yield self.env.timeout(random.randint(1, 5))
-        window.updateRun(-1)
+class processLifecycle(QObject):
 
-    # Calculate time it takes for a factory to program a droid from the given machine parts
-    def programOrders(self, machineParts):
-        window.updateRun(1)
-        window.updateTextbox("Programming droid #" + str(machineParts) + "...")
-        yield self.env.timeout(5)
-        window.updateRun(-1)
+    def controlCycles(self):
+        global cycleCount
+        global fileCommands
 
-    # Calculate random time it takes for a factory to test an assembled droid from the given machine parts
-    def testDroid(self, machineParts):
-        window.updateRun(1)
-        window.updateTextbox("Testing droid #" + str(machineParts) + "...")
-        yield self.env.timeout(random.randint(1, 10)) 
-        window.updateRun(-1) 
+        thisProcess= str(QThread.currentThread()).split(") at ",1)[1].replace('>', '')
+
+        np.random.seed()
+
+        self.newCycle(thisProcess)
+        self.readyCycle(thisProcess)
+        readFile()
+
+        for command in fileCommands:
+            if command[0].lower() == 'calculate':
+                self.runCycle(int(command[1]), int(command[2]), thisProcess)
+            elif command[0].lower() == 'i/o':
+                self.waitCycle(int(command[1]), int(command[2]), thisProcess)
+        self.exitCycle(thisProcess)
+
+    def newCycle(self, process):
+        global cycleCount
+        global saveLog
+        window.updateTextbox("Loading process " + process)
+        saveLog+=("Loading process " + process + "\n")
+        start = time.perf_counter()
+        for i in range(np.random.randint(5,15)):
+            cycleCount+=1
+            window.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycleCount), None))
+            QtTest.QTest.qWait(250)  
+        stop = time.perf_counter()
+        window.updateTextbox("Process " + process + f" loading finished in {stop - start:0.2f} seconds")
+        saveLog+=("Process " + process + f" loading finished in {stop - start:0.2f} seconds\n")
+
+    def readyCycle(self, process):
+        global cycleCount
+        global saveLog
+        window.updateTextbox("Process " + process + " is ready to run")
+        saveLog+=("Process " + process + " is ready to run\n")
+        start = time.perf_counter()
+        for i in range(np.random.randint(5,15)):
+            cycleCount+=1
+            window.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycleCount), None))
+            QtTest.QTest.qWait(250)       
+        stop = time.perf_counter()
+        window.updateTextbox("Process " + process + f" in ready state {stop - start:0.2f} seconds")
+        saveLog+=("Process " + process + f" in ready state {stop - start:0.2f} seconds\n")
+
+    def runCycle(self, min, max, process):
+        global cycleCount
+        global saveLog
+        window.updateTextbox("Running calculation for process " + process)
+        saveLog+=("Running calculation for process " + process + "\n")
+        start = time.perf_counter()
+        for i in range(np.random.randint(min, max)):
+            cycleCount+=1
+            window.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycleCount), None))
+            QtTest.QTest.qWait(250)
+        stop = time.perf_counter()
+        window.updateTextbox("Process " + process + f" ran in {stop - start:0.2f} seconds")
+        saveLog+=("Process " + process + f" ran in {stop - start:0.2f} seconds\n")
 
 
-def createDroid(env, machineParts, factory):
+    def waitCycle(self, min, max, process):
+        global cycleCount
+        global saveLog
+        window.updateTextbox("Waiting on I/O completion for process " + process)
+        saveLog+=("Waiting on I/O completion for process " + process + "\n")
+        start = time.perf_counter()
+        for i in range(np.random.randint(min, max)):
+            cycleCount+=1
+            window.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycleCount), None))
+            QtTest.QTest.qWait(250)
+        stop = time.perf_counter()
+        window.updateTextbox(f"Process " + process + f" halted for {stop - start:0.2f} seconds")
+        saveLog+=(f"Process " + process + f" halted for {stop - start:0.2f} seconds\n")
+
+
+    def exitCycle(self, process):
+        global cycleCount
+        global saveLog
+        window.updateTextbox("Process " + process + " complete, releasing resources")
+        saveLog+=("Process " + process + " complete, releasing resources\n")
+        start = time.perf_counter()
+        for i in range(np.random.randint(5,15)):
+            cycleCount+=1
+            window.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycleCount), None))
+            QtTest.QTest.qWait(250)
+        stop = time.perf_counter()
+        window.updateTextbox("Exit for process " + process + f" finished in {stop - start:0.2f} seconds")
+        saveLog+=("Exit for process " + process + f" finished in {stop - start:0.2f} seconds\n")
+
+def startProcess():
     global currentProcessCount
     currentProcessCount = 1+currentProcessCount
-    window.updateTextbox("Starting process " + str(machineParts) + "...")
-    arrival_time = env.now
+    window.updateTextbox("Starting process " + str(currentProcessCount) + "...")
+    e = mp.Event()
+    start = mp.Event()
 
-    # I/O
+    processObj = [processLifecycle() for i in range(2)]
+    #processLifecycle().controlCycles()
     
-    # Wait for assembly machine to finish previous request
-    with factory.assemblyMachine.request() as request:
-        yield request
-        yield env.process(factory.assembleDroid(machineParts))
-    
-    # Wait for computer to finish previous request
-    with factory.computer.request() as request:
-        yield request
-        yield env.process(factory.programOrders(machineParts))
-    
-    # Wait for test field to finish previous request
-    with factory.testField.request() as request:
-        yield request     
-        yield env.process(factory.testDroid(machineParts))
- 
-    # Machine parts arrive in factory
-    wait_times.append(env.now - arrival_time)
-
-
-def startFactory(env, assemblyCount, computerCount, testFieldCount):
-    factory = Factory(env, assemblyCount, computerCount, testFieldCount)
-    window.updateTextbox("Starting factory...")
-    # FORK
-
-    for machinePart in range(3):
-        window.updateNew(1)
-        env.process(createDroid(env, machinePart, factory))
-        window.updateExit(1)
-        window.updateExit(-1)
-        window.updateNew(-1)
-
-    while True:
-        window.updateWait(1)
-        yield env.timeout(0.20)
-        window.updateWait(-1)
-        window.updateNew(1)
-        machinePart += 1
-        env.process(createDroid(env, machinePart, factory))
-        window.updateExit(1)
-        window.updateExit(-1)
-        window.updateNew(-1)
-    
-
-
-def get_average_wait_time(wait_times):
-    average_wait = statistics.mean(wait_times)
-    # Pretty print the results
-    minutes, frac_minutes = divmod(average_wait, 1)
-    seconds = frac_minutes * 60
-    return round(minutes), round(seconds)
-
-
-def get_user_input():
-    num_assembly = input("Input # of assembly machines working: ")
-    num_program = input("Input # of programming machines working: ")
-    num_field = input("Input # of test fields working: ")
-    params = [num_assembly, num_program, num_field]
-    if all(str(i).isdigit() for i in params):  # Check input is valid
-        params = [int(x) for x in params]
-    else:
-        print(
-            "Could not parse input. Simulation will use default values:",
-            "\n1 assembly machine, 1 programming machine, 1 test field.",
-        )
-        params = [1, 1, 1]
-    return params
-
-
-def main():
-    # Setup
-    random.seed(42)
-    num_assembly, num_program, num_field = get_user_input()
-
-    # Run the simulation
-    env = simpy.Environment()
-    env.process(startFactory(env, num_assembly, num_program, num_field))
-    env.run(until=90) # SImulate running for 90 minutes
-    window.updateWait(-1)
-    window.updateRun(-runLCount)
-
-    # View the results
-    mins, secs = get_average_wait_time(wait_times)
-    text = "Stopping simulation..." + f"\nThe average run time is {mins} minutes and {secs} seconds."
-    window.updateTextbox(text)
-    print(f"The average run time is {mins} minutes and {secs} seconds.",)
-
+    with mp.Pool(processes=4) as pool:                                                                                           
+            pool.map(processLifecycle.controlCycles, processObj)
     
 # Launch GUI
 class Main(QMainWindow, Ui_MainWindow):
+
     def __init__(self):
         #Initialize gui
         QMainWindow.__init__(self)
         self.setupUi(self)
+        self.startButton.clicked.connect(self.startClicked)
+        self.loadButton.clicked.connect(self.getFile)
+        self.saveLogButton.clicked.connect(self.writeFile)
+    
+    def startClicked(self):
+        self.runLongTask()
+    
+    def getFile(self):
+        global fileName
+        text, ok = QInputDialog.getText(self, 'Load File', 'Enter file name:')
+		
+        if ok:
+            self.fileLoadedLabel.setText('File Loaded: ' + str(text))
+            fileName = text
+
+    def writeFile(self):
+        writeFile()
+    
+    def runLongTask(self):
+        # Step 2: Create a QThread object
+        self.thread1 = QThread()
+        self.thread2 = QThread()
+        # Step 3: Create a worker object
+        self.worker1 = processLifecycle()
+        self.worker2 = processLifecycle()
+        # Step 4: Move worker to the thread
+        self.worker1.moveToThread(self.thread1)
+        self.worker2.moveToThread(self.thread2)
+        # Step 5: Connect signals and slots
+        self.thread1.started.connect(self.worker1.controlCycles)
+        self.thread2.started.connect(self.worker2.controlCycles)
+        # Step 6: Start the thread
+        self.thread1.start()
+        self.thread2.start()
     
     def updateScreen(self, cycle, process, cpu, memory, disk):
         self.cycleCountLabel.setText(QCoreApplication.translate("MainWindow", u"Cycle Count: " + str(cycle), None))
-        self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Processes Count: " + str(process), None))
+        self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Process Count: " + str(process), None))
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", u"CPU: " + str(cpu) + '%', None))
         self.memoryUse.setText(QCoreApplication.translate("MainWindow", u"Memory: " + str(memory) + ' MB', None))
     
@@ -205,13 +248,13 @@ class Main(QMainWindow, Ui_MainWindow):
         exitLCount = exitLCount + check
         self.exitLabel.setText(QCoreApplication.translate("MainWindow", u"Exit: " + str(exitLCount), None))
 
+app = QApplication(sys.argv)
+window = Main()
 
 # Run Program
 if __name__ == "__main__":
     #main()
-    app = QApplication(sys.argv)
-    window = Main()
-    main()
     window.show()
     window.updateScreen(0,0,0,0,0)
+    #startProcess()
     sys.exit(app.exec())
