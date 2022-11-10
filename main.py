@@ -338,6 +338,8 @@ class Main(QMainWindow, Ui_MainWindow):
         # CPU % will likely always be zero due to how python is not closely related to the cpu
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", f"CPU: {psutil.Process(os.getpid()).cpu_percent():0.2f}%", None))
         self.memoryUse.setText(QCoreApplication.translate("MainWindow", f"Memory: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2:0.2f} MB", None))
+        # >> 20 for MB
+        print(psutil.Process(os.getpid()).memory_info().vms)
     
     # Update main console
     def updateTextbox(self, text):
