@@ -49,11 +49,19 @@ def writeFile():
 # Count current states of threads and cycle count
 class threadCounter():
     def __init__(self):
-        # New, ready, run, wait, and exit process count, and Cycle count
-        self._counter = [0,0,0,0,0,0]
+        # New, ready, run, wait, and exit process count, Cycle count, and 'current memory size'
+        self._counter = [0,0,0,0,0,0,0]
         # initialize lock
         self._lock = Lock()
     
+    def incrementMem(self, mem):
+        with self._lock:
+            self._counter[6] += mem
+    
+    def deincrementMem(self, mem):
+        with self._lock:
+            self._counter[6] -= mem
+
     def increment(self, i):
         with self._lock:
             self._counter[i] += 1
@@ -93,7 +101,7 @@ class processLifecycle(QObject):
         np.random.seed()
 
         # Start new cycle and then put in to ready state
-        self.newCycle(thisProcess)
+        allocMem = self.newCycle(thisProcess)
         self.readyCycle(thisProcess)
         readFile()
 
@@ -104,12 +112,19 @@ class processLifecycle(QObject):
             elif command[0].lower() == 'i/o':
                 self.waitCycle(int(command[1]), int(command[2]), thisProcess)
         # Start exit
-        self.exitCycle(thisProcess)
+        self.exitCycle(thisProcess, allocMem)
 
     # Run new lifecycle
     def newCycle(self, process):
         global saveLog
         global pause
+        # "Allocate" memory for new process of random size from 50 to 150
+        allocMem = np.random.randint(50,150)
+        self.counter.incrementMem(allocMem)
+
+        # Check if there is space to exit the new cycle state, halt if not
+        while self.counter.value(6) > 512:
+            QtTest.QTest.qWait(10)
 
         window.updateTextbox("Loading process " + process)
         saveLog+=("Loading process " + process + "\n")
@@ -120,7 +135,7 @@ class processLifecycle(QObject):
             self.checkCycleCount()
             if not pause:
                 self.counter.increment(5)
-                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5),self.counter.value(6))
                 QtTest.QTest.qWait(250)  
             else:
                 pauseTime += time.perf_counter() - start
@@ -132,6 +147,7 @@ class processLifecycle(QObject):
         window.updateTextbox("Process " + process + f" loading finished in {pauseTime + stop - start:0.2f} seconds")
         saveLog+=("Process " + process + f" loading finished in {stop - start:0.2f} seconds\n")
         self.counter.deincrement(0)
+        return allocMem
 
     # Run ready lifecycle
     def readyCycle(self, process):
@@ -145,7 +161,7 @@ class processLifecycle(QObject):
             self.checkCycleCount()
             if not pause:
                 self.counter.increment(5)
-                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5),self.counter.value(6))
                 QtTest.QTest.qWait(250)  
             else:
                 pauseTime += time.perf_counter() - start
@@ -169,7 +185,7 @@ class processLifecycle(QObject):
             self.checkCycleCount()
             if not pause:
                 self.counter.increment(5)
-                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5),self.counter.value(6))
                 QtTest.QTest.qWait(250)  
             else:
                 pauseTime += time.perf_counter() - start
@@ -194,7 +210,7 @@ class processLifecycle(QObject):
             self.checkCycleCount()
             if not pause:
                 self.counter.increment(5)
-                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5),self.counter.value(6))
                 QtTest.QTest.qWait(250)  
             else:
                 pauseTime += time.perf_counter() - start
@@ -208,17 +224,18 @@ class processLifecycle(QObject):
 
 
     # Run exit lifecycle
-    def exitCycle(self, process):
+    def exitCycle(self, process, allocMem):
         global saveLog
         window.updateTextbox("Process " + process + " complete, releasing resources")
         saveLog+=("Process " + process + " complete, releasing resources\n")
         self.counter.increment(4)
+        start = time.perf_counter()
         pauseTime = 0
         for i in range(np.random.randint(5,15)):
             self.checkCycleCount()
             if not pause:
                 self.counter.increment(5)
-                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5))
+                window.updateScreen(self.counter.value(0),self.counter.value(1),self.counter.value(2),self.counter.value(3),self.counter.value(4),self.counter.value(5),self.counter.value(6))
                 QtTest.QTest.qWait(250)  
             else:
                 pauseTime += time.perf_counter() - start
@@ -227,6 +244,7 @@ class processLifecycle(QObject):
                 start = time.perf_counter()
         stop = time.perf_counter()
         self.counter.deincrement(4)
+        self.counter.deincrementMem(allocMem)
         window.updateTextbox("Exit for process " + process + f" finished in {stop - start:0.2f} seconds")
         saveLog+=("Exit for process " + process + f" finished in {stop - start:0.2f} seconds\n")
     
@@ -326,7 +344,7 @@ class Main(QMainWindow, Ui_MainWindow):
         pause = False
 
     # Update resources/process states
-    def updateScreen(self, new, ready, run, wait, exitV, counter):
+    def updateScreen(self, new, ready, run, wait, exitV, counter, extraMem):
         global processCount
         self.newLabel.setText(QCoreApplication.translate("MainWindow", u"New: " + str(new), None))
         self.readyLabel.setText(QCoreApplication.translate("MainWindow", u"Ready: " + str(ready), None))
@@ -337,9 +355,9 @@ class Main(QMainWindow, Ui_MainWindow):
         self.processCountLabel.setText(QCoreApplication.translate("MainWindow", u"Process Count: " + str(processCount), None))
         # CPU % will likely always be zero due to how python is not closely related to the cpu
         self.CPUpercent.setText(QCoreApplication.translate("MainWindow", f"CPU: {psutil.Process(os.getpid()).cpu_percent():0.2f}%", None))
-        self.memoryUse.setText(QCoreApplication.translate("MainWindow", f"Memory: {psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2:0.2f} MB", None))
+        self.memoryUse.setText(QCoreApplication.translate("MainWindow", f"Memory: {(extraMem+(psutil.Process(os.getpid()).memory_info().rss / 1024 ** 2)):0.2f} MB", None))
         # >> 20 for MB
-        print(psutil.Process(os.getpid()).memory_info().vms)
+        #print(psutil.Process(os.getpid()).memory_info().vms)
     
     # Update main console
     def updateTextbox(self, text):
@@ -352,5 +370,5 @@ window = Main()
 # Run Program
 if __name__ == "__main__":
     window.show()
-    window.updateScreen(0,0,0,0,0,0)
+    window.updateScreen(0,0,0,0,0,0,0)
     sys.exit(app.exec())
