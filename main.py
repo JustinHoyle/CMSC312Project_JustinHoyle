@@ -3,6 +3,8 @@
 # Main app file to run gui
 # CMSC 312
 
+# Be sure to create .exe file justin
+
 # TEMPLATE FOR TEXT INPUT FILE
 ######################################
 # Commands must be listed as command(Calculate,I/O),min(int),max(int)
