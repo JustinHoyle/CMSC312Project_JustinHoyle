@@ -120,12 +120,15 @@ class processLifecycle(QObject):
     def newCycle(self, process):
         global saveLog
         global pause
+
         # "Allocate" memory for new process of random size from 50 to 150
         allocMem = np.random.randint(50,150)
         self.counter.incrementMem(allocMem)
 
         # Check if there is space to exit the new cycle state, halt if not
         while self.counter.value(6) > 512:
+            window.updateTextbox("Process " + process + f" load waiting for memory space...")
+            saveLog+=("Process " + process + f" loading finished in {stop - start:0.2f} seconds\n")
             QtTest.QTest.qWait(10)
 
         window.updateTextbox("Loading process " + process)
@@ -315,6 +318,9 @@ class Main(QMainWindow, Ui_MainWindow):
     # Start simulation
     def runLongTask(self):
         global processCount
+
+        # Create threads for virtual address space within the physcical address space. Due to creating threads with python,
+        # the addresses are automatically created (as seen in the console log with the process names)
         counter = threadCounter()
 
         # Create a QThread object    
